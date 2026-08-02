@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="bn" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MediTrack</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0F4C75">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MediTrack">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root{--bg:#0a1628;--surface:#112240;--surface2:#1a3055;--accent:#00b4d8;--green:#06d6a0;--red:#ef476f;--yellow:#ffd166;--text:#e2e8f0;--muted:#8899aa;--border:#1e3a5f;--radius:14px}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:480px;margin:0 auto;overflow-x:hidden}
+.header{background:var(--surface);padding:16px 20px 12px;position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:20px;font-weight:700;color:var(--accent)}.header .subtitle{font-size:11px;color:var(--muted);margin-top:1px}
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:65px;z-index:99}
+.tab{flex:1;padding:12px 4px;text-align:center;font-size:12px;font-weight:600;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}.tab span{display:block;font-size:18px;margin-bottom:2px}
+.page{display:none;padding:16px;padding-bottom:100px}.page.active{display:block}
+.search-wrap{position:relative;margin-bottom:16px}
+.search-wrap input{width:100%;padding:12px 16px 12px 42px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:14px;outline:none}
+.search-wrap input::placeholder{color:var(--muted)}.search-wrap .si{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.stat-card{background:var(--surface);border-radius:var(--radius);padding:12px 10px;text-align:center;border:1px solid var(--border)}
+.stat-card .val{font-size:22px;font-weight:700}.stat-card .lbl{font-size:10px;color:var(--muted);margin-top:2px}
+.stat-card.blue .val{color:var(--accent)}.stat-card.green .val{color:var(--green)}.stat-card.red .val{color:var(--red)}
+.med-list{display:flex;flex-direction:column;gap:10px}
+.med-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:14px;display:flex;gap:12px;align-items:flex-start;cursor:pointer;transition:transform .15s}
+.med-card:active{transform:scale(.98)}
+.med-img{width:54px;height:54px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;overflow:hidden}
+.med-img img{width:100%;height:100%;object-fit:cover;border-radius:10px}
+.med-info{flex:1;min-width:0}.med-name{font-size:15px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.med-meta{font-size:11px;color:var(--muted);margin-bottom:6px}.med-tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
+.tag.store{background:rgba(0,180,216,.15);color:var(--accent)}.tag.personal{background:rgba(6,214,160,.15);color:var(--green)}
+.tag.low{background:rgba(239,71,111,.15);color:var(--red)}.tag.exp{background:rgba(255,209,102,.15);color:var(--yellow)}
+.med-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.med-qty{font-size:16px;font-weight:700;color:var(--accent)}.med-price{font-size:11px;color:var(--muted)}
+.fab{position:fixed;bottom:90px;right:20px;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#0077b6);border:none;font-size:28px;color:#fff;cursor:pointer;box-shadow:0 6px 24px rgba(0,180,216,.5);display:flex;align-items:center;justify-content:center;z-index:200;transition:transform .2s}
+.fab:active{transform:scale(.92)}
+.cam-fab{position:fixed;bottom:90px;right:90px;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--green),#02c39a);border:none;font-size:22px;color:#fff;cursor:pointer;box-shadow:0 6px 20px rgba(6,214,160,.4);display:flex;align-items:center;justify-content:center;z-index:200;transition:transform .2s}
+.cam-fab:active{transform:scale(.92)}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surface);border-top:1px solid var(--border);display:flex;z-index:300}
+.nav-btn{flex:1;padding:10px 4px 14px;text-align:center;background:none;border:none;cursor:pointer;font-size:10px;color:var(--muted);font-weight:600;transition:color .2s}
+.nav-btn span{display:block;font-size:22px;margin-bottom:2px}.nav-btn.active{color:var(--accent)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:20px 20px 40px;max-height:90vh;overflow-y:auto;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
+.modal h2{font-size:18px;font-weight:700;margin-bottom:18px}
+.form-group{margin-bottom:14px}
+.form-group label{font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border-color .2s}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent)}
+.form-group select option{background:var(--surface)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cam-preview{width:100%;height:200px;border-radius:12px;background:var(--bg);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;margin-bottom:14px;overflow:hidden;cursor:pointer}
+.cam-preview img{width:100%;height:100%;object-fit:cover;border-radius:10px}
+.cam-preview .cam-hint{color:var(--muted);font-size:13px;text-align:center}.cam-preview .cam-icon{font-size:36px}
+#camInput{display:none}
+.ai-scanning{background:rgba(0,180,216,.1);border:1px solid var(--accent);border-radius:10px;padding:12px;margin-bottom:14px;display:none;align-items:center;gap:10px}
+.ai-scanning.show{display:flex}.ai-scanning .spin{animation:spin 1s linear infinite;font-size:20px;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}.ai-scanning p{font-size:13px;color:var(--accent)}
+.btn{width:100%;padding:14px;border-radius:12px;border:none;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s;font-family:inherit}
+.btn:active{opacity:.8}.btn-primary{background:linear-gradient(135deg,var(--accent),#0077b6);color:#fff}
+.btn-danger{background:rgba(239,71,111,.15);color:var(--red);border:1px solid rgba(239,71,111,.3)}
+.btn-row{display:flex;gap:10px;margin-top:14px}.btn-row .btn{flex:1}
+.personal-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:10px}
+.dose-info{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.dose-chip{background:rgba(6,214,160,.12);color:var(--green);font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px}
+.take-btn{width:100%;padding:10px;border-radius:10px;background:rgba(6,214,160,.12);color:var(--green);border:1px solid rgba(6,214,160,.3);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.taken{background:rgba(6,214,160,.25)!important}
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}.empty .emoji{font-size:48px;margin-bottom:12px}.empty p{font-size:14px;line-height:1.6}
+.detail-img{width:100%;height:160px;border-radius:12px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:48px;margin-bottom:14px;overflow:hidden}
+.detail-img img{width:100%;height:100%;object-fit:cover}
+.detail-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.detail-row .key{color:var(--muted);font-size:13px}.detail-row .val{font-size:13px;font-weight:600}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--green);color:#0a1628;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:700;z-index:1000;opacity:0;transition:opacity .3s;white-space:nowrap}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="header">
+  <div><h1>💊 MediTrack</h1><div class="subtitle">Medicine Manager</div></div>
+</div>
+<div class="tabs">
+  <button class="tab active" onclick="showPage('store',this)"><span>🏪</span>Store</button>
+  <button class="tab" onclick="showPage('personal',this)"><span>💊</span>Personal</button>
+  <button class="tab" onclick="showPage('alerts',this)"><span>⚠️</span>Alerts</button>
+</div>
+<div class="page active" id="page-store">
+  <div class="stats">
+    <div class="stat-card blue"><div class="val" id="stat-total">0</div><div class="lbl">Total</div></div>
+    <div class="stat-card red"><div class="val" id="stat-low">0</div><div class="lbl">Low Stock</div></div>
+    <div class="stat-card green"><div class="val" id="stat-exp">0</div><div class="lbl">Expiring</div></div>
+  </div>
+  <div class="search-wrap"><span class="si">🔍</span><input type="text" id="storeSearch" placeholder="Search..." oninput="renderStore()"></div>
+  <div class="med-list" id="storeList"></div>
+</div>
+<div class="page" id="page-personal"><div class="med-list" id="personalList"></div></div>
+<div class="page" id="page-alerts"><div class="med-list" id="alertsList"></div></div>
+<button class="cam-fab" onclick="openCamera()">📷</button>
+<button class="fab" onclick="openAddModal()">+</button>
+<div class="bottom-nav">
+  <button class="nav-btn active" onclick="showPage('store',null,this)"><span>🏪</span>Store</button>
+  <button class="nav-btn" onclick="showPage('personal',null,this)"><span>💊</span>Personal</button>
+  <button class="nav-btn" onclick="showPage('alerts',null,this)"><span>⚠️</span>Alerts</button>
+  <button class="nav-btn" onclick="openAddModal()"><span>➕</span>Add</button>
+</div>
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="modalTitle">➕ Add Medicine</h2>
+    <div class="cam-preview" id="camPreview" onclick="document.getElementById('camInput').click()">
+      <div class="cam-icon">📷</div>
+      <div class="cam-hint">Tap to take photo<br><small>AI detects medicine automatically</small></div>
+    </div>
+    <input type="file" id="camInput" accept="image/*" capture="environment" onchange="handleImage(event)">
+    <div class="ai-scanning" id="aiScanning"><span class="spin">⚙️</span><p>AI analyzing...</p></div>
+    <div class="form-group"><label>Medicine Name *</label><input type="text" id="f-name" placeholder="e.g. Paracetamol 500mg"></div>
+    <div class="form-group"><label>Type</label><select id="f-type"><option value="store">🏪 Store Stock</option><option value="personal">💊 Personal</option><option value="both">🔄 Both</option></select></div>
+    <div class="form-row">
+      <div class="form-group"><label>Quantity</label><input type="number" id="f-qty" placeholder="0" min="0"></div>
+      <div class="form-group"><label>Unit</label><select id="f-unit"><option>pcs</option><option>strips</option><option>bottles</option><option>boxes</option><option>ml</option><option>gm</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Price (৳)</label><input type="number" id="f-price" placeholder="0.00" step="0.01"></div>
+      <div class="form-group"><label>Low Stock Alert</label><input type="number" id="f-lowstock" placeholder="Min qty"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Mfg Date</label><input type="date" id="f-mfg"></div>
+      <div class="form-group"><label>Expire Date</label><input type="date" id="f-exp"></div>
+    </div>
+    <div class="form-group"><label>Supplier / Brand</label><input type="text" id="f-supplier" placeholder="e.g. Square Pharma"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Dose</label><input type="text" id="f-dose" placeholder="e.g. 1 tablet"></div>
+      <div class="form-group"><label>Frequency</label><select id="f-freq"><option>Once daily</option><option>Twice daily</option><option>3x daily</option><option>As needed</option></select></div>
+    </div>
+    <div class="form-group"><label>Notes</label><textarea id="f-notes" rows="2" placeholder="Special instructions..."></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-danger" onclick="closeModal('addModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveMedicine()">Save</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="detail-img" id="detailImg"></div>
+    <h2 id="detailName"></h2>
+    <div id="detailRows"></div>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-danger" onclick="deleteFromDetail()">🗑 Delete</button>
+      <button class="btn btn-primary" onclick="closeModal('detailModal')">Close</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+let medicines=JSON.parse(localStorage.getItem('meditrack_v2')||'[]');
+let editingId=null,detailId=null,capturedImage=null;
+function save(){localStorage.setItem('meditrack_v2',JSON.stringify(medicines))}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+function showPage(name,tabEl,navEl){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(tabEl){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));tabEl.classList.add('active')}
+  if(navEl){document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));navEl.classList.add('active')}
+  if(name==='store')renderStore();if(name==='personal')renderPersonal();if(name==='alerts')renderAlerts();
+}
+function renderStore(){
+  const q=document.getElementById('storeSearch').value.toLowerCase();
+  const list=medicines.filter(m=>(m.type==='store'||m.type==='both')&&(!q||m.name.toLowerCase().includes(q)||(m.supplier||'').toLowerCase().includes(q)));
+  const all=medicines.filter(m=>m.type==='store'||m.type==='both');
+  document.getElementById('stat-total').textContent=all.length;
+  document.getElementById('stat-low').textContent=all.filter(m=>m.qty<=(m.lowstock||5)).length;
+  document.getElementById('stat-exp').textContent=all.filter(m=>{if(!m.exp)return false;const d=new Date(m.exp)-new Date();return d>0&&d<90*24*3600*1000}).length;
+  const el=document.getElementById('storeList');
+  if(!list.length){el.innerHTML=`<div class="empty"><div class="emoji">🏪</div><p>No medicines yet.<br>Tap + or 📷 to add.</p></div>`;return}
+  el.innerHTML=list.map(m=>{
+    const isLow=m.qty<=(m.lowstock||5);
+    const isExp=m.exp&&(new Date(m.exp)-new Date())<90*24*3600*1000;
+    return`<div class="med-card" onclick="openDetail('${m.id}')">
+      <div class="med-img">${m.image?`<img src="${m.image}">`:'💊'}</div>
+      <div class="med-info">
+        <div class="med-name">${m.name}</div>
+        <div class="med-meta">${m.supplier||'No supplier'}${m.exp?' · Exp: '+m.exp:''}</div>
+        <div class="med-tags">
+          <span class="tag ${m.type==='personal'?'personal':'store'}">${m.type==='personal'?'Personal':'Store'}</span>
+          ${isLow?'<span class="tag low">⚠️ Low</span>':''}
+          ${isExp?'<span class="tag exp">⏳ Expiring</span>':''}
+        </div>
+      </div>
+      <div class="med-right">
+        <div class="med-qty">${m.qty||0} <span style="font-size:10px;font-weight:400">${m.unit||'pcs'}</span></div>
+        ${m.price?`<div class="med-price">৳${m.price}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+function renderPersonal(){
+  const list=medicines.filter(m=>m.type==='personal'||m.type==='both');
+  const el=document.getElementById('personalList');
+  if(!list.length){el.innerHTML=`<div class="empty"><div class="emoji">💊</div><p>No personal medicines yet.</p></div>`;return}
+  el.innerHTML=list.map(m=>`
+    <div class="personal-card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:44px;height:44px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden;flex-shrink:0">${m.image?`<img src="${m.image}" style="width:100%;height:100%;object-fit:cover;border-radius:10px">`:'💊'}</div>
+        <div style="flex:1"><div class="med-name">${m.name}</div><div style="font-size:11px;color:var(--muted)">${m.supplier||''}</div></div>
+        <button onclick="deleteMed('${m.id}')" style="background:none;border:none;font-size:18px;cursor:pointer">🗑️</button>
+      </div>
+      <div class="dose-info">
+        ${m.dose?`<span class="dose-chip">💊 ${m.dose}</span>`:''}
+        ${m.freq?`<span class="dose-chip">🕐 ${m.freq}</span>`:''}
+        ${m.exp?`<span class="dose-chip">📅 Exp: ${m.exp}</span>`:''}
+        ${m.qty?`<span class="dose-chip">📦 ${m.qty} ${m.unit||''}</span>`:''}
+      </div>
+      ${m.notes?`<div style="font-size:12px;color:var(--muted);margin-top:6px">${m.notes}</div>`:''}
+      <button class="take-btn ${m.takenToday?'taken':''}" onclick="markTaken('${m.id}',this)">${m.takenToday?'✅ Taken today':'✔ Mark as taken today'}</button>
+    </div>`).join('');
+}
+function renderAlerts(){
+  const alerts=[];
+  medicines.forEach(m=>{
+    if((m.type==='store'||m.type==='both')&&m.qty<=(m.lowstock||5))alerts.push({...m,alertType:'low'});
+    if(m.exp){const d=new Date(m.exp)-new Date();if(d<0)alerts.push({...m,alertType:'expired'});else if(d<90*24*3600*1000)alerts.push({...m,alertType:'expiring'})}
+  });
+  const el=document.getElementById('alertsList');
+  if(!alerts.length){el.innerHTML=`<div class="empty"><div class="emoji">✅</div><p>No alerts! All good.</p></div>`;return}
+  el.innerHTML=alerts.map(m=>`
+    <div class="med-card" onclick="openDetail('${m.id}')">
+      <div class="med-img">${m.image?`<img src="${m.image}">`:'💊'}</div>
+      <div class="med-info">
+        <div class="med-name">${m.name}</div>
+        <div class="med-meta">${m.supplier||''}</div>
+        <div class="med-tags">
+          ${m.alertType==='low'?`<span class="tag low">⚠️ Low: ${m.qty} left</span>`:''}
+          ${m.alertType==='expired'?`<span class="tag low">❌ Expired: ${m.exp}</span>`:''}
+          ${m.alertType==='expiring'?`<span class="tag exp">⏳ Expires: ${m.exp}</span>`:''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+function openCamera(){openAddModal();setTimeout(()=>document.getElementById('camInput').click(),300)}
+async function handleImage(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async(ev)=>{capturedImage=ev.target.result;document.getElementById('camPreview').innerHTML=`<img src="${capturedImage}">`;await aiDetect(capturedImage)};
+  reader.readAsDataURL(file);
+}
+async function aiDetect(imageData){
+  const sc=document.getElementById('aiScanning');
+  sc.classList.add('show');
+  sc.querySelector('p').textContent='AI scanning medicine...';
+  try{
+    const base64=imageData.split(',')[1];
+    const mime=imageData.match(/data:(.*?);/)?.[1]||'image/jpeg';
+    const res=await fetch('/.netlify/functions/scan',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({image:base64,mime:mime})
+    });
+    if(!res.ok) throw new Error('Server error');
+    const info=await res.json();
+    if(info.error) throw new Error(info.error);
+    if(info.name){document.getElementById('f-name').value=info.name;}
+    if(info.supplier){document.getElementById('f-supplier').value=info.supplier;}
+    if(info.exp){document.getElementById('f-exp').value=info.exp;}
+    if(info.unit){
+      const unitSel=document.getElementById('f-unit');
+      for(let o of unitSel.options){if(o.value===info.unit){unitSel.value=info.unit;break}}
+    }
+    toast('✅ Detected: '+(info.name||'medicine').slice(0,30));
+  }catch(e){
+    console.error(e);
+    toast('⚠️ Could not detect — fill manually');
+  }
+  sc.classList.remove('show');
+  sc.querySelector('p').textContent='AI analyzing...';
+}
+function openAddModal(id){
+  editingId=id||null;capturedImage=null;
+  document.getElementById('modalTitle').textContent=id?'✏️ Edit':'➕ Add Medicine';
+  document.getElementById('camPreview').innerHTML=`<div class="cam-icon">📷</div><div class="cam-hint">Tap to take photo<br><small>AI detects automatically</small></div>`;
+  ['f-name','f-qty','f-price','f-lowstock','f-mfg','f-exp','f-supplier','f-dose','f-notes'].forEach(i=>{const el=document.getElementById(i);if(el)el.value=''});
+  if(id){const m=medicines.find(x=>x.id===id);if(m){
+    if(m.image)document.getElementById('camPreview').innerHTML=`<img src="${m.image}">`;
+    document.getElementById('f-name').value=m.name||'';document.getElementById('f-type').value=m.type||'store';
+    document.getElementById('f-qty').value=m.qty||'';document.getElementById('f-unit').value=m.unit||'pcs';
+    document.getElementById('f-price').value=m.price||'';document.getElementById('f-lowstock').value=m.lowstock||'';
+    document.getElementById('f-mfg').value=m.mfg||'';document.getElementById('f-exp').value=m.exp||'';
+    document.getElementById('f-supplier').value=m.supplier||'';document.getElementById('f-dose').value=m.dose||'';
+    document.getElementById('f-freq').value=m.freq||'Once daily';document.getElementById('f-notes').value=m.notes||'';
+    capturedImage=m.image||null;
+  }}
+  document.getElementById('addModal').classList.add('open');
+}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+function saveMedicine(){
+  const name=document.getElementById('f-name').value.trim();if(!name){toast('⚠️ Name required');return}
+  const med={id:editingId||uid(),name,type:document.getElementById('f-type').value,
+    qty:parseFloat(document.getElementById('f-qty').value)||0,unit:document.getElementById('f-unit').value,
+    price:parseFloat(document.getElementById('f-price').value)||0,lowstock:parseFloat(document.getElementById('f-lowstock').value)||5,
+    mfg:document.getElementById('f-mfg').value,exp:document.getElementById('f-exp').value,
+    supplier:document.getElementById('f-supplier').value,dose:document.getElementById('f-dose').value,
+    freq:document.getElementById('f-freq').value,notes:document.getElementById('f-notes').value,
+    image:capturedImage,takenToday:false,addedAt:Date.now()};
+  if(editingId){const i=medicines.findIndex(m=>m.id===editingId);if(i>-1){med.takenToday=medicines[i].takenToday;medicines[i]=med}}
+  else medicines.unshift(med);
+  save();closeModal('addModal');renderStore();renderPersonal();renderAlerts();toast('✅ Saved!');
+}
+function openDetail(id){
+  detailId=id;const m=medicines.find(x=>x.id===id);if(!m)return;
+  document.getElementById('detailImg').innerHTML=m.image?`<img src="${m.image}" style="width:100%;height:100%;object-fit:cover">`:'💊';
+  document.getElementById('detailName').textContent=m.name;
+  const rows=[['Type',m.type==='both'?'Store+Personal':m.type],['Qty',`${m.qty||0} ${m.unit||''}`],['Price',m.price?`৳${m.price}`:'—'],['Supplier',m.supplier||'—'],['Mfg',m.mfg||'—'],['Expire',m.exp||'—'],['Dose',m.dose||'—'],['Frequency',m.freq||'—'],['Notes',m.notes||'—']];
+  document.getElementById('detailRows').innerHTML=rows.map(([k,v])=>`<div class="detail-row"><span class="key">${k}</span><span class="val">${v}</span></div>`).join('')+`<div style="margin-top:12px"><button class="btn btn-primary" onclick="openAddModal('${m.id}');closeModal('detailModal')">✏️ Edit</button></div>`;
+  document.getElementById('detailModal').classList.add('open');
+}
+function deleteFromDetail(){if(!detailId)return;deleteMed(detailId);closeModal('detailModal')}
+function deleteMed(id){medicines=medicines.filter(m=>m.id!==id);save();renderStore();renderPersonal();renderAlerts();toast('🗑️ Deleted')}
+function markTaken(id,btn){const m=medicines.find(x=>x.id===id);if(!m)return;m.takenToday=!m.takenToday;save();btn.textContent=m.takenToday?'✅ Taken today':'✔ Mark as taken today';btn.classList.toggle('taken',m.takenToday);toast(m.takenToday?'✅ Taken!':'Unmarked')}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
+const today=new Date().toDateString();
+if(localStorage.getItem('meditrack_day')!==today){medicines.forEach(m=>m.takenToday=false);save();localStorage.setItem('meditrack_day',today)}
+if(!medicines.length){medicines=[{id:uid(),name:'Napa 500mg',type:'store',qty:120,unit:'pcs',price:1.5,lowstock:20,exp:'2026-12-31',supplier:'Beximco',dose:'',freq:'',notes:'',image:null,takenToday:false,addedAt:Date.now()},{id:uid(),name:'Amoxicillin 250mg',type:'store',qty:8,unit:'strips',price:45,lowstock:10,exp:'2026-06-15',supplier:'Square Pharma',dose:'',freq:'',notes:'',image:null,takenToday:false,addedAt:Date.now()},{id:uid(),name:'Vitamin D3',type:'personal',qty:30,unit:'pcs',price:200,lowstock:5,exp:'2027-01-01',supplier:'ACI',dose:'1 tablet',freq:'Once daily',notes:'After breakfast',image:null,takenToday:false,addedAt:Date.now()}];save()}
+renderStore();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{})}
+</script>
+</body>
+</html>

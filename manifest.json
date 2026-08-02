@@ -1,0 +1,32 @@
+{
+  "name": "MediTrack \u2014 Medicine Manager",
+  "short_name": "MediTrack",
+  "description": "Medical store and personal medicine tracker with AI camera scanning",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a1628",
+  "theme_color": "#0F4C75",
+  "orientation": "portrait-primary",
+  "lang": "bn",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "medical",
+    "health",
+    "productivity"
+  ]
+}
